@@ -6,7 +6,8 @@ DATABASE_URL = "sqlite:///./MyFitnessRank.db"
 engine = create_engine(DATABASE_URL, echo=True)
 
 def get_session():
-    return Session(engine)
+    with Session(engine) as session:
+        yield session
 
 def init_db():
     SQLModel.metadata.create_all(engine)

@@ -3,13 +3,13 @@ import math
 from typing import List
 from ..schemas.running_schema import RunningRequest, RunningResponse, HistogramResult, HistogramBin
 from ..models.running_model import RunningPercentileBin
-from ..core.db import get_session
 from sqlmodel import select
+from sqlmodel import Session
 
 class RunningAnalyzer:
-    def __init__(self, request: RunningRequest):
+    def __init__(self, request: RunningRequest, session: Session):
         self.request = request
-        self.session = get_session()
+        self.session = session
 
     def _load_bins(self, gender: str, age_group: tuple[int, int]) -> List[RunningPercentileBin]:
         stmt = select(RunningPercentileBin).where(
