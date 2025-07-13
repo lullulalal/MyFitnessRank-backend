@@ -21,9 +21,30 @@ class RunningAnalyzer:
         )
         return self.session.exec(stmt).all()
 
+    def _get_time_range_by_distance(self) -> tuple[int, int]:
+        """
+        Returns the (min_time, max_time) cutoff in seconds based on the requested distance.
+        If the distance is not defined, raises a ValueError.
+        """
+        distance = self.request.distance.lower()
+
+        distance_cutoffs = {
+            "5": (12 * 60, 55 * 60),
+            "10": (26 * 60, 110 * 60),
+            "half": (56 * 60, 210 * 60),
+            "full": (130 * 60, 420 * 60)
+        }
+
+        if distance not in distance_cutoffs:
+            raise ValueError(f"Unsupported distance: {distance}")
+
+        return distance_cutoffs[distance]
+
     def _make_histogram(self, bins: List[RunningPercentileBin], age_group: tuple[int, int]) -> HistogramResult:
         if not bins:
             return HistogramResult(bins=[], user_percentile=0.0,  age_range_start=age_group[0], age_range_end=age_group[1])
+
+        #bins = self._filter_extreme_bins(bins)
 
         # calculate total participants
         total = sum(b.count for b in bins if b.count > 0 and b.finish_seconds_max > b.finish_seconds_min)
@@ -47,8 +68,9 @@ class RunningAnalyzer:
         user_percentile = round((faster / total) * 100, 2)
 
         # make time-based histogram bins
-        min_time = min(b.finish_seconds_min for b in bins)
-        max_time = max(b.finish_seconds_max for b in bins)
+        # min_time = min(b.finish_seconds_min for b in bins)
+        # max_time = max(b.finish_seconds_max for b in bins)
+        min_time, max_time = self._get_time_range_by_distance()
         num_bins = 15
         bin_size = math.ceil((max_time - min_time) / num_bins)
 
