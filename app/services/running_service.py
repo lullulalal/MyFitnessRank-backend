@@ -23,12 +23,12 @@ class RunningAnalyzer:
 
     def _make_histogram(self, bins: List[RunningPercentileBin], age_group: tuple[int, int]) -> HistogramResult:
         if not bins:
-            return HistogramResult(bins=[], user_percentile=0.0)
+            return HistogramResult(bins=[], user_percentile=0.0,  age_range_start=age_group[0], age_range_end=age_group[1])
 
         # calculate total participants
         total = sum(b.count for b in bins if b.count > 0 and b.finish_seconds_max > b.finish_seconds_min)
         if total == 0:
-            return HistogramResult(bins=[], user_percentile=0.0)
+            return HistogramResult(bins=[], user_percentile=0.0,  age_range_start=age_group[0], age_range_end=age_group[1])
 
         # calculate user percentile
         faster = 0.0
